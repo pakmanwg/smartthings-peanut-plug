@@ -3,7 +3,7 @@ Peanut Plug device handler with power and accumulated energy display for Smartth
 
 Features
 - allow smarthings to recognize peanut plug
-- display current power and accumulated energy usage. This require peanut plug to have latest firmware. To upgrade to latest firmware, user will require a Almond 2015, Almond+ or Almond 3 (Almond 2012 do not support peanut plug). Smartthings cannot do the firmware upgrade for peanut plug.
+- display current power and accumulated energy usage. This require peanut plug to have latest firmware. To upgrade to latest firmware, user will require a Almond 2015, Almond+ or Almond 3 (Almond 2012 does not support peanut plug). Unfortunately, Smartthings cannot do firmware upgrade for peanut plug. They can only upgrade firmware for light bulb.
 - allow reset the energy usage in the device page
 
 Screen Dumps
