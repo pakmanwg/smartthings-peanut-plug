@@ -9,6 +9,6 @@ Features
 Screen Dumps
 
 <p align="center">
-  <img src = "https://github.com/pakmanwg/smartthings-peanut-plug/blob/master/IMG_1908.PNG" width=350/>
+  <img src = "https://github.com/pakmanwg/smartthings-peanut-plug/blob/master/IMG_1908.PNG" width=350 hspace=50/>
   <img src = "https://github.com/pakmanwg/smartthings-peanut-plug/blob/master/IMG_1914.PNG" width=350/>
 </p>
