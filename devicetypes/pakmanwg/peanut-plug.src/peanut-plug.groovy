@@ -18,6 +18,7 @@
  *
  *  Change Log
  *  2017-09-17 - v01.01 Created
+ *  2018-03-01 - v01.02 fix power accuracy issue
  */
 
 metadata {
@@ -70,7 +71,7 @@ def parse(String description) {
 	if (event) {
 		if (event.name == "power") {
 			def powerValue
-			powerValue = (event.value as Integer)/10            //TODO: The divisor value needs to be set as part of configuration
+			powerValue = (event.value as Integer)/3.6
 			sendEvent(name: "power", value: powerValue)
 			def time = (now() - state.time) / 3600000 / 1000
 			state.time = now()
