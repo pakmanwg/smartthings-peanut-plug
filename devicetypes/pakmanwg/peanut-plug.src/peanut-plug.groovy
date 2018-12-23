@@ -19,12 +19,15 @@
  *  Change Log
  *  2017-09-17 - v01.01 Created
  *  2018-03-01 - v01.02 fix power accuracy issue
+ *  2018-12-23 - v01.03 merging jamesham change to get the calibrated attr from peanut plug,
+ *                      add support for new smartthings app
  */
 
 import physicalgraph.zigbee.zcl.DataType
 
 metadata {
-	definition (name: "Peanut Plug", namespace: "pakmanwg", author: "pakmanw@sbcglobal.net", ocfDeviceType: "oic.d.switch") {
+	definition (name: "Peanut Plug", namespace: "pakmanwg", author: "pakmanw@sbcglobal.net", ocfDeviceType: "oic.d.switch",
+		vid: "generic-switch-power-energy") {
 		capability "Energy Meter"
 		capability "Actuator"
 		capability "Switch"
@@ -159,10 +162,10 @@ def refresh() {
 	zigbee.onOffConfig(0, reportIntervalMinutes * 60) +
 	zigbee.simpleMeteringPowerConfig() +
 	zigbee.electricMeasurementPowerConfig() +
-    voltageMeasurementRefresh() +
-    voltageMeasurementConfig() +
-    currentMeasurementRefresh() +
-    currentMeasurementConfig() +
+	voltageMeasurementRefresh() +
+	voltageMeasurementConfig() +
+	currentMeasurementRefresh() +
+	currentMeasurementConfig() +
 	zigbee.readAttribute(zigbee.ELECTRICAL_MEASUREMENT_CLUSTER, 0x0600) +
 	zigbee.readAttribute(zigbee.ELECTRICAL_MEASUREMENT_CLUSTER, 0x0601) +
 	zigbee.readAttribute(zigbee.ELECTRICAL_MEASUREMENT_CLUSTER, 0x0602) +
@@ -188,7 +191,7 @@ def voltageMeasurementRefresh() {
 }
 
 def getCurrentMultiplier() {
-	if (state.currentMultiplier && state.currentDivisor) {
+    if (state.currentMultiplier && state.currentDivisor) {
     	return (state.currentMultiplier / state.currentDivisor)
     } else {
         return 0.001831
@@ -196,7 +199,7 @@ def getCurrentMultiplier() {
 }
 
 def getVoltageMultiplier() {
-	if (state.voltageMultiplier && state.voltageDivisor) {
+    if (state.voltageMultiplier && state.voltageDivisor) {
     	return (state.voltageMultiplier / state.voltageDivisor)
     } else {
     	return 0.0045777
@@ -204,7 +207,7 @@ def getVoltageMultiplier() {
 }
 
 def getPowerMultiplier() {
-	if (state.powerMultiplier && state.powerDivisor) {
+    if (state.powerMultiplier && state.powerDivisor) {
     	return (state.powerMultiplier / state.powerDivisor)
     } else {
     	return 0.277
@@ -236,8 +239,8 @@ def ping() {
 def reset() {
 	state.energyValue = 0.0
 	state.powerValue = 0.0
-    state.voltage = 0.0
-    state.current = 0.0
+	state.voltage = 0.0
+	state.current = 0.0
 	state.time = now()
 	sendEvent(name: "energy", value: state.energyValue)
 }
