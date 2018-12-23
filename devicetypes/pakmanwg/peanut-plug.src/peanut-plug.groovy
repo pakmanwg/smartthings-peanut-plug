@@ -162,10 +162,10 @@ def refresh() {
 	zigbee.onOffConfig(0, reportIntervalMinutes * 60) +
 	zigbee.simpleMeteringPowerConfig() +
 	zigbee.electricMeasurementPowerConfig() +
-        voltageMeasurementRefresh() +
-        voltageMeasurementConfig() +
-        currentMeasurementRefresh() +
-        currentMeasurementConfig() +
+	voltageMeasurementRefresh() +
+	voltageMeasurementConfig() +
+	currentMeasurementRefresh() +
+	currentMeasurementConfig() +
 	zigbee.readAttribute(zigbee.ELECTRICAL_MEASUREMENT_CLUSTER, 0x0600) +
 	zigbee.readAttribute(zigbee.ELECTRICAL_MEASUREMENT_CLUSTER, 0x0601) +
 	zigbee.readAttribute(zigbee.ELECTRICAL_MEASUREMENT_CLUSTER, 0x0602) +
@@ -239,8 +239,8 @@ def ping() {
 def reset() {
 	state.energyValue = 0.0
 	state.powerValue = 0.0
-        state.voltage = 0.0
-        state.current = 0.0
+	state.voltage = 0.0
+	state.current = 0.0
 	state.time = now()
 	sendEvent(name: "energy", value: state.energyValue)
 }
