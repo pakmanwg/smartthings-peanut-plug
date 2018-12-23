@@ -21,6 +21,8 @@
  *  2018-03-01 - v01.02 fix power accuracy issue
  */
 
+import physicalgraph.zigbee.zcl.DataType
+
 metadata {
 	definition (name: "Peanut Plug", namespace: "pakmanwg", author: "pakmanw@sbcglobal.net", ocfDeviceType: "oic.d.switch") {
 		capability "Energy Meter"
@@ -33,6 +35,9 @@ metadata {
 		capability "Sensor"
 		capability "Light"
 		capability "Health Check"
+        capability "Voltage Measurement"
+        
+        attribute "current","number"
 
 		command "reset"
        
@@ -52,6 +57,12 @@ metadata {
 		valueTile("energy", "device.energy") {
 			state "default", label:'${currentValue} kWh'
 		}
+		valueTile("voltage", "device.voltage") {
+			state "default", label:'${currentValue} V'
+		}
+		valueTile("current", "device.current") {
+			state "default", label:'${currentValue} A'
+		}
 		standardTile("reset", "device.energy", inactiveLabel: false, decoration: "flat") {
 			state "default", label:'reset kWh', action:"reset"
 		}
@@ -59,8 +70,8 @@ metadata {
 			state "default", label:'', action:"refresh.refresh", icon:"st.secondary.refresh"
 		}
 
-		main(["switch","power","energy"])
-		details(["switch","power","energy","refresh","reset"])
+		main(["switch","power","energy","voltage","current"])
+		details(["switch","power","energy","voltage","current","refresh","reset"])
 	}
 }
 
@@ -71,7 +82,7 @@ def parse(String description) {
 	if (event) {
 		if (event.name == "power") {
 			def powerValue
-			powerValue = (event.value as Integer)/3.6
+			powerValue = (event.value as Integer) * getPowerMultiplier()
 			sendEvent(name: "power", value: powerValue)
 			def time = (now() - state.time) / 3600000 / 1000
 			state.time = now()
@@ -83,6 +94,43 @@ def parse(String description) {
 		} else {
 			sendEvent(event)
 		}
+    } else if (description?.startsWith("read attr -")) {
+    	def descMap = zigbee.parseDescriptionAsMap(description)
+        log.debug "Desc Map: $descMap"
+        if (descMap.clusterInt == zigbee.ELECTRICAL_MEASUREMENT_CLUSTER) {
+        	def intVal = Integer.parseInt(descMap.value,16)
+        	if (descMap.attrInt == 0x0600) {
+            	log.debug "ACVoltageMultiplier $intVal"
+                state.voltageMultiplier = intVal
+            } else if (descMap.attrInt == 0x0601) {
+            	log.debug "ACVoltageDivisor $intVal"
+                state.voltageDivisor = intVal
+            } else if (descMap.attrInt == 0x0602) {
+            	log.debug "ACCurrentMultiplier $intVal"
+                state.currentMultiplier = intVal
+            } else if (descMap.attrInt == 0x0603) {
+            	log.debug "ACCurrentDivisor $intVal"
+                state.currentDivisor = intVal
+            } else if (descMap.attrInt == 0x0604) {
+            	log.debug "ACPowerMultiplier $intVal"
+                state.powerMultiplier = intVal
+            } else if (descMap.attrInt == 0x0605) {
+            	log.debug "ACPowerDivisor $intVal"
+                state.powerDivisor = intVal
+            } else if (descMap.attrInt == 0x0505) {
+                def voltageValue = intVal * getVoltageMultiplier()
+                log.debug "Voltage ${voltageValue}"
+                state.voltage = $voltageValue
+                sendEvent(name: "voltage", value: voltageValue)
+            } else if (descMap.attrInt == 0x0508) {
+                def currentValue = intVal * getCurrentMultiplier()
+                log.debug "Current ${currentValue}"
+                state.current = $currentValue
+                sendEvent(name: "current", value: currentValue)
+            }
+        } else {
+        	log.warn "Not an electrical measurement"
+        }
 	} else {
 		log.warn "DID NOT PARSE MESSAGE for description : $description"
 		log.debug zigbee.parseDescriptionAsMap(description)
@@ -110,7 +158,57 @@ def refresh() {
 	zigbee.electricMeasurementPowerRefresh() +
 	zigbee.onOffConfig(0, reportIntervalMinutes * 60) +
 	zigbee.simpleMeteringPowerConfig() +
-	zigbee.electricMeasurementPowerConfig()
+	zigbee.electricMeasurementPowerConfig() +
+    voltageMeasurementRefresh() +
+    voltageMeasurementConfig() +
+    currentMeasurementRefresh() +
+    currentMeasurementConfig() +
+	zigbee.readAttribute(zigbee.ELECTRICAL_MEASUREMENT_CLUSTER, 0x0600) +
+	zigbee.readAttribute(zigbee.ELECTRICAL_MEASUREMENT_CLUSTER, 0x0601) +
+	zigbee.readAttribute(zigbee.ELECTRICAL_MEASUREMENT_CLUSTER, 0x0602) +
+	zigbee.readAttribute(zigbee.ELECTRICAL_MEASUREMENT_CLUSTER, 0x0603) +
+	zigbee.readAttribute(zigbee.ELECTRICAL_MEASUREMENT_CLUSTER, 0x0604) +
+	zigbee.readAttribute(zigbee.ELECTRICAL_MEASUREMENT_CLUSTER, 0x0605)
+}
+
+def currentMeasurementConfig(minReportTime=1, maxReportTime=600, reportableChange=0x0030) {
+	zigbee.configureReporting(zigbee.ELECTRICAL_MEASUREMENT_CLUSTER, 0x0508, DataType.UINT16, minReportTime, maxReportTime, reportableChange)
+}
+
+def currentMeasurementRefresh() {
+	zigbee.readAttribute(zigbee.ELECTRICAL_MEASUREMENT_CLUSTER, 0x0508);
+}
+
+def voltageMeasurementConfig(minReportTime=1, maxReportTime=600, reportableChange=0x0018) {
+	zigbee.configureReporting(zigbee.ELECTRICAL_MEASUREMENT_CLUSTER, 0x0505, DataType.UINT16, minReportTime, maxReportTime, reportableChange)
+}
+
+def voltageMeasurementRefresh() {
+	zigbee.readAttribute(zigbee.ELECTRICAL_MEASUREMENT_CLUSTER, 0x0505);
+}
+
+def getCurrentMultiplier() {
+	if (state.currentMultiplier && state.currentDivisor) {
+    	return (state.currentMultiplier / state.currentDivisor)
+    } else {
+        return 0.001831
+    }
+}
+
+def getVoltageMultiplier() {
+	if (state.voltageMultiplier && state.voltageDivisor) {
+    	return (state.voltageMultiplier / state.voltageDivisor)
+    } else {
+    	return 0.0045777
+    }
+}
+
+def getPowerMultiplier() {
+	if (state.powerMultiplier && state.powerDivisor) {
+    	return (state.powerMultiplier / state.powerDivisor)
+    } else {
+    	return 0.277
+    }
 }
 
 def configure() {
@@ -138,6 +236,8 @@ def ping() {
 def reset() {
 	state.energyValue = 0.0
 	state.powerValue = 0.0
+    state.voltage = 0.0
+    state.current = 0.0
 	state.time = now()
 	sendEvent(name: "energy", value: state.energyValue)
 }
