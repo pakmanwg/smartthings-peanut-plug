@@ -38,9 +38,9 @@ metadata {
 		capability "Sensor"
 		capability "Light"
 		capability "Health Check"
-        capability "Voltage Measurement"
+		capability "Voltage Measurement"
         
-        attribute "current","number"
+		attribute "current","number"
 
 		command "reset"
        
