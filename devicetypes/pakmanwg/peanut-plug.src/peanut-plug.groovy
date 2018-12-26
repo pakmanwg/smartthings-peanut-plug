@@ -81,6 +81,9 @@ metadata {
 def parse(String description) {
 
 	log.debug "description is $description"
+    if (description?.contains("0003")) {
+    	log.info "Mentions 0003: $description"
+    }
 	def event = zigbee.getEvent(description)
 	if (event) {
 		if (event.name == "power") {
@@ -156,6 +159,7 @@ def on() {
 
 def refresh() {
 	Integer reportIntervalMinutes = 5
+	zigbee.readAttribute(0x0003,0x0000) +
 	zigbee.onOffRefresh() +
 	zigbee.simpleMeteringPowerRefresh() +
 	zigbee.electricMeasurementPowerRefresh() +
