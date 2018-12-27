@@ -76,14 +76,15 @@ metadata {
 		main(["switch","power","energy","voltage","current"])
 		details(["switch","power","energy","voltage","current","refresh","reset"])
 	}
+    
+    preferences {
+    	input name: "retainState", type: "bool", title: "Retain State?", description: "Retain state on power loss?", required: false, displayDuringSetup: false, defaultValue: true
+    }
 }
 
 def parse(String description) {
 
 	log.debug "description is $description"
-    if (description?.contains("0003")) {
-    	log.info "Mentions 0003: $description"
-    }
 	def event = zigbee.getEvent(description)
 	if (event) {
 		if (event.name == "power") {
@@ -159,7 +160,7 @@ def on() {
 
 def refresh() {
 	Integer reportIntervalMinutes = 5
-	zigbee.readAttribute(0x0003,0x0000) +
+    setRetainState() +
 	zigbee.onOffRefresh() +
 	zigbee.simpleMeteringPowerRefresh() +
 	zigbee.electricMeasurementPowerRefresh() +
@@ -220,7 +221,7 @@ def getPowerMultiplier() {
 
 def configure() {
 	log.debug "in configure()"
-	return configureHealthCheck()
+	return configureHealthCheck() + setRetainState()
 }
 
 def configureHealthCheck() {
@@ -232,12 +233,24 @@ def configureHealthCheck() {
 def updated() {
 	log.debug "in updated()"
 	// updated() doesn't have it's return value processed as hub commands, so we have to send them explicitly
-	def cmds = configureHealthCheck()
+	def cmds = configureHealthCheck() + setRetainState()
 	cmds.each{ sendHubCommand(new physicalgraph.device.HubAction(it)) }
 }
 
 def ping() {
 	return zigbee.onOffRefresh()
+}
+
+def setRetainState() {
+	log.debug "Setting Retain State: $retainState"
+    if (retainState == null || retainState) {
+    	if (retainState == null) {
+        	log.warn "retainState is null, defaulting to 'true' behavior"
+        }
+        return zigbee.writeAttribute(0x0003, 0x0000, DataType.UINT16, 0x0000)
+    } else {
+        return zigbee.writeAttribute(0x0003, 0x0000, DataType.UINT16, 0x1111)
+    }
 }
 
 def reset() {
