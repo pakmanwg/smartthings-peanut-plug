@@ -21,6 +21,7 @@
  *  2018-03-01 - v01.02 fix power accuracy issue
  *  2018-12-23 - v01.03 merging jamesham change to get the calibrated attr from peanut plug,
  *                      add support for new smartthings app
+ *  2019-01-17 - v01.04 merging jamesham retain state code
  */
 
 import physicalgraph.zigbee.zcl.DataType
