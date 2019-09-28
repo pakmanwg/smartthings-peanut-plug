@@ -48,7 +48,7 @@ metadata {
        
 		fingerprint profileId: "0104", inClusters: "0000, 0001, 0003, 0004, 0005, 0006, 0B04, 0B05",
 			outClusters: "0000, 0001, 0003, 0004, 0005, 0006, 0019, 0B04, 0B05",
-			manufacturer: “Securifi Ltd."
+			manufacturer: "Securifi Ltd."
 	}
 
 	// tile definitions
