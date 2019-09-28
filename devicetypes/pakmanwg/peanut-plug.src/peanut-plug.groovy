@@ -23,7 +23,7 @@
  *                      add support for new smartthings app
  *  2019-01-17 - v01.04 merging jamesham retain state code
  *  2019-09-27 - v01.05 update fingerprint from transman
- *  2019-09-27 - v01.06 add interval settings and cost
+ *  2019-09-28 - v01.06 add interval, and cost settings
  */
 
 import physicalgraph.zigbee.zcl.DataType
@@ -86,8 +86,9 @@ metadata {
 
 	preferences {
 		input name: "retainState", type: "bool", title: "Retain State?", description: "Retain state on power loss?", required: false, displayDuringSetup: false, defaultValue: true
-		input "reportIntervalMinutes", "number", title: "Report Interval in minute", description: "Time between Report in minute", range: "0..*", defaultValue: 5
-        input "costPerKwh", "number", title: "Cost per Kwh in cent", description: "Electric Cost per Kwh in cent", range: "0..*", defaultValue: 15
+        // input "reportPercentageChanges", "number", title: "Report Percentage Changes", description: "Report Percentage Changes", range: "0..*", defaultValue: 5
+		input "reportIntervalMinutes", "number", title: "Report Interval in minute for voltage, current", description: "Time between Report in minute", range: "0..*", defaultValue: 5
+        input "costPerKwh", "number", title: "Cost per Kwh in cent", description: "Electric Cost per Kwh in cent", range: "0..*", defaultValue: 15       
 	}
 }
 
@@ -177,13 +178,13 @@ def refresh() {
 	zigbee.onOffRefresh() +
 	zigbee.simpleMeteringPowerRefresh() +
 	zigbee.electricMeasurementPowerRefresh() +
-	zigbee.onOffConfig(0, reportIntervalMinutes * 60) +
-	zigbee.simpleMeteringPowerConfig() +
-	zigbee.electricMeasurementPowerConfig() +
+	zigbee.onOffConfig(1, 600) +
+	zigbee.simpleMeteringPowerConfig(1, 600) +
+	zigbee.electricMeasurementPowerConfig(1, 600) +
 	voltageMeasurementRefresh() +
-	voltageMeasurementConfig() +
+	voltageMeasurementConfig(reportIntervalMinutes * 60, 600) +
 	currentMeasurementRefresh() +
-	currentMeasurementConfig() +
+	currentMeasurementConfig(reportIntervalMinutes * 60, 600) +
 	zigbee.readAttribute(zigbee.ELECTRICAL_MEASUREMENT_CLUSTER, 0x0600) +
 	zigbee.readAttribute(zigbee.ELECTRICAL_MEASUREMENT_CLUSTER, 0x0601) +
 	zigbee.readAttribute(zigbee.ELECTRICAL_MEASUREMENT_CLUSTER, 0x0602) +
