@@ -23,6 +23,7 @@
  *                      add support for new smartthings app
  *  2019-01-17 - v01.04 merging jamesham retain state code
  *  2019-09-27 - v01.05 update fingerprint from transman
+ *  2019-09-27 - v01.06 add interval settings and cost
  */
 
 import physicalgraph.zigbee.zcl.DataType
@@ -69,6 +70,9 @@ metadata {
 		valueTile("current", "device.current") {
 			state "default", label:'${currentValue} A'
 		}
+		valueTile("cost", "device.cost") {
+			state "default", label:'$ ${currentValue}'
+		}
 		standardTile("reset", "device.energy", inactiveLabel: false, decoration: "flat") {
 			state "default", label:'reset kWh', action:"reset"
 		}
@@ -76,12 +80,14 @@ metadata {
 			state "default", label:'', action:"refresh.refresh", icon:"st.secondary.refresh"
 		}
 
-		main(["switch","power","energy","voltage","current"])
-		details(["switch","power","energy","voltage","current","refresh","reset"])
+		main(["switch","power","energy","voltage","current","cost"])
+		details(["switch","power","energy","voltage","current","cost","refresh","reset"])
 	}
 
 	preferences {
 		input name: "retainState", type: "bool", title: "Retain State?", description: "Retain state on power loss?", required: false, displayDuringSetup: false, defaultValue: true
+		input "reportIntervalMinutes", "number", title: "Report Interval in minute", description: "Time between Report in minute", range: "0..*", defaultValue: 5
+        input "costPerKwh", "number", title: "Cost per Kwh in cent", description: "Electric Cost per Kwh in cent", range: "0..*", defaultValue: 15
 	}
 }
 
@@ -94,13 +100,17 @@ def parse(String description) {
 			def powerValue
 			powerValue = (event.value as Integer) * getPowerMultiplier()
 			sendEvent(name: "power", value: powerValue)
+            costValue = powerValue * costPerKwh
+            sendEvent(name: "cost", value: costValue)
 			def time = (now() - state.time) / 3600000 / 1000
 			state.time = now()
-			log.debug "powerValues is $state.powerValue"
+			// log.debug "powerValues is $state.powerValue"
 			state.energyValue = state.energyValue + (time * state.powerValue)
 			state.powerValue = powerValue
 			// log.debug "energyValue is $state.energyValue"
 			sendEvent(name: "energy", value: state.energyValue)
+			state.costValue = state.energyValue * costPerKwh
+			sendEvent(name: "cost", value: state.costValue)
 		} else {
 			sendEvent(event)
 		}
@@ -162,7 +172,7 @@ def on() {
 }
 
 def refresh() {
-	Integer reportIntervalMinutes = 5
+	// Integer reportIntervalMinutes = 5
 	setRetainState() +
 	zigbee.onOffRefresh() +
 	zigbee.simpleMeteringPowerRefresh() +
@@ -261,6 +271,8 @@ def reset() {
 	state.powerValue = 0.0
 	state.voltage = 0.0
 	state.current = 0.0
+	state.costValue = 0.0
 	state.time = now()
 	sendEvent(name: "energy", value: state.energyValue)
+	sendEvent(name: "cost", value: state.costValue)
 }
