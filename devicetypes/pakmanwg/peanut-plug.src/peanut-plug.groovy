@@ -120,31 +120,31 @@ def parse(String description) {
 		if (descMap.clusterInt == zigbee.ELECTRICAL_MEASUREMENT_CLUSTER) {
 			def intVal = Integer.parseInt(descMap.value,16)
 			if (descMap.attrInt == 0x0600) {
-				log.debug "ACVoltageMultiplier $intVal"
+				// log.debug "ACVoltageMultiplier $intVal"
 				state.voltageMultiplier = intVal
 			} else if (descMap.attrInt == 0x0601) {
-				log.debug "ACVoltageDivisor $intVal"
+				// log.debug "ACVoltageDivisor $intVal"
 				state.voltageDivisor = intVal
 			} else if (descMap.attrInt == 0x0602) {
-				log.debug "ACCurrentMultiplier $intVal"
+				// log.debug "ACCurrentMultiplier $intVal"
 				state.currentMultiplier = intVal
 			} else if (descMap.attrInt == 0x0603) {
-				log.debug "ACCurrentDivisor $intVal"
+				// log.debug "ACCurrentDivisor $intVal"
 				state.currentDivisor = intVal
 			} else if (descMap.attrInt == 0x0604) {
-				log.debug "ACPowerMultiplier $intVal"
+				// log.debug "ACPowerMultiplier $intVal"
 				state.powerMultiplier = intVal
 			} else if (descMap.attrInt == 0x0605) {
-				log.debug "ACPowerDivisor $intVal"
+				// log.debug "ACPowerDivisor $intVal"
 				state.powerDivisor = intVal
 			} else if (descMap.attrInt == 0x0505) {
 				def voltageValue = intVal * getVoltageMultiplier()
-				log.debug "Voltage ${voltageValue}"
+				// log.debug "Voltage ${voltageValue}"
 				state.voltage = $voltageValue
 				sendEvent(name: "voltage", value: voltageValue)
 			} else if (descMap.attrInt == 0x0508) {
 				def currentValue = intVal * getCurrentMultiplier()
-				log.debug "Current ${currentValue}"
+				// log.debug "Current ${currentValue}"
 				state.current = $currentValue
 				sendEvent(name: "current", value: currentValue)
 			}
