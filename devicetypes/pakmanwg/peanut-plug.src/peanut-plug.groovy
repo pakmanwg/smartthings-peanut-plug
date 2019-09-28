@@ -22,6 +22,7 @@
  *  2018-12-23 - v01.03 merging jamesham change to get the calibrated attr from peanut plug,
  *                      add support for new smartthings app
  *  2019-01-17 - v01.04 merging jamesham retain state code
+ *  2019-09-27 - v01.05 update fingerprint from transman
  */
 
 import physicalgraph.zigbee.zcl.DataType
@@ -46,7 +47,8 @@ metadata {
 		command "reset"
        
 		fingerprint profileId: "0104", inClusters: "0000, 0001, 0003, 0004, 0005, 0006, 0B04, 0B05",
-			outClusters: "0000, 0001, 0003, 0004, 0005, 0006, 0019, 0B04, 0B05"
+			outClusters: "0000, 0001, 0003, 0004, 0005, 0006, 0019, 0B04, 0B05",
+			manufacturer: “Securifi Ltd."
 	}
 
 	// tile definitions
