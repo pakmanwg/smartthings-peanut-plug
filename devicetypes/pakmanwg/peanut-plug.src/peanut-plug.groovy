@@ -86,9 +86,9 @@ metadata {
 
 	preferences {
 		input name: "retainState", type: "bool", title: "Retain State?", description: "Retain state on power loss?", required: false, displayDuringSetup: false, defaultValue: true
-        // input "reportPercentageChanges", "number", title: "Report Percentage Changes", description: "Report Percentage Changes", range: "0..*", defaultValue: 5
+		// input "reportPercentageChanges", "number", title: "Report Percentage Changes", description: "Report Percentage Changes", range: "0..*", defaultValue: 5
 		input "reportIntervalMinutes", "number", title: "Report Interval in minute for voltage, current", description: "Time between Report in minute", range: "0..*", defaultValue: 5
-        input "costPerKwh", "number", title: "Cost per Kwh in cent", description: "Electric Cost per Kwh in cent", range: "0..*", defaultValue: 15       
+		input "costPerKwh", "number", title: "Cost per Kwh in cent", description: "Electric Cost per Kwh in cent", range: "0..*", defaultValue: 15       
 	}
 }
 
@@ -101,8 +101,8 @@ def parse(String description) {
 			def powerValue
 			powerValue = (event.value as Integer) * getPowerMultiplier()
 			sendEvent(name: "power", value: powerValue)
-            costValue = powerValue * costPerKwh
-            sendEvent(name: "cost", value: costValue)
+			costValue = powerValue * costPerKwh
+			sendEvent(name: "cost", value: costValue)
 			def time = (now() - state.time) / 3600000 / 1000
 			state.time = now()
 			// log.debug "powerValues is $state.powerValue"
