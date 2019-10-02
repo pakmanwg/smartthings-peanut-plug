@@ -24,6 +24,7 @@
  *  2019-01-17 - v01.04 merging jamesham retain state code
  *  2019-09-27 - v01.05 update fingerprint from transman
  *  2019-09-30 - v01.06 new interface, add active power settings
+ *  2019-10-01 - v01.07 add cost per kwh
  */
 
 import physicalgraph.zigbee.zcl.DataType
@@ -43,7 +44,8 @@ metadata {
 		capability "Health Check"
 		capability "Voltage Measurement"
         
-		attribute "current","number"
+		attribute "current", "number"
+		attribute "switchStatus", "string"
 
 		command "reset"
        
@@ -59,9 +61,8 @@ metadata {
 				attributeState "on", label: '${name}', action: "switch.off", icon: "st.switches.switch.on", backgroundColor: "#00a0dc"
 				attributeState "off", label: '${name}', action: "switch.on", icon: "st.switches.switch.off", backgroundColor: "#ffffff"
 			}
-			tileAttribute ("device.acceleration", key: "SECONDARY_CONTROL") {
-				attributeState "inactive", label:'INACTIVE'
-				attributeState "active", label:'ACTIVE'
+			tileAttribute ("device.switchStatus", key: "SECONDARY_CONTROL") {
+				attributeState "switchStatus", label:'${currentValue}'
 			}
 		}
 		standardTile("refresh", "device.refresh", width: 2, height: 2) {
@@ -87,7 +88,7 @@ metadata {
 		}
 
 		main(["switch"])
-		details(["switch", "power", "energy", "refresh", "voltage", "current", "reset", "history"])
+		details(["switch", "power", "energy", "refresh", "voltage", "current", "reset"])
 	}
 
 	preferences {
@@ -95,7 +96,7 @@ metadata {
 		// configParams?.each {			
 		// 	getOptionsInput(it)
 		// }
-		// input "energyPrice", "number", title: "\$/kWh Cost:", description: "Electric Cost per Kwh in cent", range: "0..*", defaultValue: 15
+		input "energyPrice", "number", title: "\$/kWh Cost:", description: "Electric Cost per Kwh in cent", range: "0..*", defaultValue: 15
 		input "inactivePower", "decimal", title: "Reporting inactive when power is less than or equal to:", range: "0..*", defaultValue: 0
 		// ["Power", "Energy", "Voltage", "Current"].each {
 		// 	getBoolInput("display${it}", "Display ${it} Activity", true)
@@ -498,19 +499,15 @@ def parse(String description) {
 				localCostPerKwh = energyPrice as Integer
 			}  
 			sendEvent(name: "energy", value: state.energyValue)
-			state.costValue = state.energyValue * localCostPerKwh / 100
+			state.costValue = roundTwoPlaces(state.energyValue * localCostPerKwh / 100)
 			sendEvent(name: "cost", value: state.costValue)
-			def deviceActive = (device.currentValue("acceleration") == "active")
 			if (inactivePowerSetting == null) {
 				inactivePowerSetting = 0
 			}
-			if (powerValue > inactivePowerSetting && !deviceActive) {
-				sendEvent(name:"acceleration", value:"active", displayed:false)
-			}
-			else if (powerValue <= inactivePowerSetting && deviceActive){
-				sendEvent(name:"acceleration", value:"inactive", displayed:false)
-			}
-			refreshHistory
+    			def switchStatusS = (powerValue > inactivePowerSetting) ? "Active | Cost \$ $state.costValue" : "Inactive | Cost \$ $state.costValue"
+    			// log.debug "$switchStatusS"
+    			sendEvent(name: "switchStatus", value: switchStatusS, displayed: false)
+			// refreshHistory
 		} else {
 			sendEvent(event)
 		}
