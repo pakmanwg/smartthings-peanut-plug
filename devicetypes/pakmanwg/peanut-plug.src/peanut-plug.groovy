@@ -25,6 +25,7 @@
  *  2019-09-27 - v01.05 update fingerprint from transman
  *  2019-09-30 - v01.06 new interface, add active power settings
  *  2019-10-01 - v01.07 add cost per kwh
+ *  2019-10-02 - v01.08 add reset time
  */
 
 import physicalgraph.zigbee.zcl.DataType
@@ -240,6 +241,7 @@ def reset() {
 	state.time = now()
 	sendEvent(name: "energy", value: state.energyValue)
 	sendEvent(name: "cost", value: state.costValue)
+	state.resetTime = new Date().format('MM/dd/yy hh:mm a', location.timeZone)
 }
 
 def refreshHistory() {
@@ -504,9 +506,12 @@ def parse(String description) {
 			if (inactivePowerSetting == null) {
 				inactivePowerSetting = 0
 			}
-    			def switchStatusS = (powerValue > inactivePowerSetting) ? "Active | Cost \$ $state.costValue" : "Inactive | Cost \$ $state.costValue"
-    			// log.debug "$switchStatusS"
-    			sendEvent(name: "switchStatus", value: switchStatusS, displayed: false)
+            if (state.resetTime == null) {
+            	state.resetTime = new Date().format('MM/dd/yy hh:mm a', location.timeZone)
+ 			}
+			def switchStatusS = (powerValue > inactivePowerSetting) ? "Active | Cost \$$state.costValue since $state.resetTime" : "Inactive | Cost \$$state.costValue since $state.resetTime"
+			// log.debug "$switchStatusS"
+			sendEvent(name: "switchStatus", value: switchStatusS, displayed: false)
 			// refreshHistory
 		} else {
 			sendEvent(event)
