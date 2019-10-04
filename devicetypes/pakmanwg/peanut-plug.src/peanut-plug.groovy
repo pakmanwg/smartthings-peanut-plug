@@ -541,14 +541,14 @@ def parse(String description) {
 				// log.debug "ACPowerDivisor $intVal"
 				state.powerDivisor = intVal
 			} else if (descMap.attrInt == 0x0505) {
-				def voltageValue = intVal * getVoltageMultiplier()
+				def voltageValue = roundTwoPlaces(intVal * getVoltageMultiplier())
 				// log.debug "Voltage ${voltageValue}"
-				state.voltage = roundTwoPlaces($voltageValue)
+				state.voltage = $voltageValue
 				sendEvent(name: "voltage", value: voltageValue)
 			} else if (descMap.attrInt == 0x0508) {
-				def currentValue = intVal * getCurrentMultiplier()
+				def currentValue = roundTwoPlaces(intVal * getCurrentMultiplier())
 				// log.debug "Current ${currentValue}"
-				state.current = roundTwoPlaces($currentValue)
+				state.current = $currentValue
 				sendEvent(name: "current", value: currentValue)
 			}
 		} else {
