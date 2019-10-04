@@ -26,6 +26,7 @@
  *  2019-09-30 - v01.06 new interface, add active power settings
  *  2019-10-01 - v01.07 add cost per kwh
  *  2019-10-02 - v01.08 add reset time
+ *  2019-10-03 - v01.09 two decimal points for values
  */
 
 import physicalgraph.zigbee.zcl.DataType
@@ -493,8 +494,8 @@ def parse(String description) {
 			def time = (now() - state.time) / 3600000 / 1000
 			state.time = now()
 			// log.debug "powerValues is $state.powerValue"
-			state.energyValue = state.energyValue + (time * state.powerValue)
-			state.powerValue = powerValue
+			state.energyValue = roundTwoPlaces(state.energyValue + (time * state.powerValue))
+			state.powerValue = roundTwoPlaces(powerValue)
 			// log.debug "energyValue is $state.energyValue"
 			def localCostPerKwh = 15
 			if (energyPrice) {
@@ -506,8 +507,8 @@ def parse(String description) {
 			if (inactivePowerSetting == null) {
 				inactivePowerSetting = 0
 			}
-            if (state.resetTime == null) {
-            	state.resetTime = new Date().format('MM/dd/yy hh:mm a', location.timeZone)
+			if (state.resetTime == null) {
+				state.resetTime = new Date().format('MM/dd/yy hh:mm a', location.timeZone)
  			}
 			def switchStatusS = (powerValue > inactivePowerSetting) ? "Active | Cost \$$state.costValue since $state.resetTime" : "Inactive | Cost \$$state.costValue since $state.resetTime"
 			// log.debug "$switchStatusS"
@@ -542,12 +543,12 @@ def parse(String description) {
 			} else if (descMap.attrInt == 0x0505) {
 				def voltageValue = intVal * getVoltageMultiplier()
 				// log.debug "Voltage ${voltageValue}"
-				state.voltage = $voltageValue
+				state.voltage = roundTwoPlaces($voltageValue)
 				sendEvent(name: "voltage", value: voltageValue)
 			} else if (descMap.attrInt == 0x0508) {
 				def currentValue = intVal * getCurrentMultiplier()
 				// log.debug "Current ${currentValue}"
-				state.current = $currentValue
+				state.current = roundTwoPlaces($currentValue)
 				sendEvent(name: "current", value: currentValue)
 			}
 		} else {
