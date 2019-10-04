@@ -489,7 +489,7 @@ def parse(String description) {
 	if (event) {
 		if (event.name == "power") {
 			def powerValue
-			powerValue = (event.value as Integer) * getPowerMultiplier()
+			powerValue = roundTwoPlaces((event.value as Integer) * getPowerMultiplier())
 			sendEvent(name: "power", value: powerValue)
 			def time = (now() - state.time) / 3600000 / 1000
 			state.time = now()
