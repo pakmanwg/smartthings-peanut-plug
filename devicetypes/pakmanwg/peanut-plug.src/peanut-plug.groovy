@@ -27,6 +27,7 @@
  *  2019-10-01 - v01.07 add cost per kwh
  *  2019-10-02 - v01.08 add reset time
  *  2019-10-03 - v01.09 two decimal points for values
+ *  2020-02-23 - v01.10 fix energy value not update issues
  */
 
 import physicalgraph.zigbee.zcl.DataType
@@ -494,7 +495,7 @@ def parse(String description) {
 			def time = (now() - state.time) / 3600000 / 1000
 			state.time = now()
 			// log.debug "powerValues is $state.powerValue"
-			state.energyValue = roundTwoPlaces(state.energyValue + (time * state.powerValue))
+			state.energyValue = roundTwoPlaces(state.energyValue + (time * powerValue))
 			state.powerValue = roundTwoPlaces(powerValue)
 			// log.debug "energyValue is $state.energyValue"
 			def localCostPerKwh = 15
