@@ -495,7 +495,7 @@ def parse(String description) {
 			def time = (now() - state.time) / 3600000 / 1000
 			state.time = now()
 			// log.debug "powerValues is $state.powerValue"
-			state.energyValue = roundTwoPlaces(state.energyValue + (time * powerValue))
+			state.energyValue = state.energyValue + (time * powerValue)
 			state.powerValue = roundTwoPlaces(powerValue)
 			// log.debug "energyValue is $state.energyValue"
 			def localCostPerKwh = 15
