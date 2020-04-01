@@ -73,7 +73,7 @@ metadata {
       state "refresh", label:'Refresh', action: "refresh", icon:"st.secondary.refresh-icon"
     }
     standardTile("reset", "device.reset", width: 2, height: 2) {
-      state "refresh", label:'Reset', action: "reset", icon:"st.secondary.refresh-icon"
+      state "reset", label:'Reset', action: "reset", icon:"st.secondary.refresh-icon"
     }
     valueTile("power", "device.power", width: 2, height: 2) {
       state "default", label:'${currentValue} W', backgroundColor: "#cccccc"
@@ -243,8 +243,8 @@ def reset() {
   state.current = 0.0
   state.costValue = 0.0
   state.time = now()
-  sendEvent(name: "energy", value: (String.format("%.2f", energyValue)))
-  sendEvent(name: "cost", value: (String.format("%.2f", costValue)))
+  sendEvent(name: "energy", value: (String.format("%.2f", state.energyValue)))
+  sendEvent(name: "cost", value: (String.format("%.2f", state.costValue)))
   state.resetTime = new Date().format('MM/dd/yy hh:mm a', location.timeZone)
 }
 
@@ -491,21 +491,21 @@ def parse(String description) {
   def event = zigbee.getEvent(description)
   if (event) {
     if (event.name == "power") {
-      def powerValue = roundTwoPlaces((event.value as Integer) * getPowerMultiplier())
+      def powerValue = (event.value as Integer) * getPowerMultiplier()
       sendEvent(name: "power", value: (String.format("%.2f", powerValue)))
       def time = (now() - state.time) / 3600000 / 1000
       state.time = now()
       // log.debug "powerValues is $state.powerValue"
       state.energyValue = state.energyValue + (time * powerValue)
-      state.powerValue = roundTwoPlaces(powerValue)
+      state.powerValue = powerValue
       // log.debug "energyValue is $state.energyValue"
       def localCostPerKwh = 15
       if (energyPrice) {
         localCostPerKwh = energyPrice as Integer
       }
-      sendEvent(name: "energy", value: (String.format("%.2f", energyValue)))
+      sendEvent(name: "energy", value: (String.format("%.2f", state.energyValue)))
       state.costValue = roundTwoPlaces(state.energyValue * localCostPerKwh / 100)
-      sendEvent(name: "cost", value: String.format("%.2f", costValue)))
+      sendEvent(name: "cost", value: (String.format("%.2f", state.costValue)))
       if (inactivePowerSetting == null) {
         inactivePowerSetting = 0
       }
@@ -562,3 +562,4 @@ def parse(String description) {
     log.debug zigbee.parseDescriptionAsMap(description)
   }
 }
+
