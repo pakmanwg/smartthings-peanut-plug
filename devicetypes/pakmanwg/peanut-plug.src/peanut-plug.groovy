@@ -512,8 +512,9 @@ def parse(String description) {
       if (state.resetTime == null) {
         state.resetTime = new Date().format('MM/dd/yy hh:mm a', location.timeZone)
       }
+      def costStr = (String.format("%.2f", state.costValue))
       def switchStatusS = (powerValue > inactivePowerSetting) ? "Active | Cost \$$state.costValue since $state.resetTime" :
-        "Inactive | Cost \$$state.costValue since $state.resetTime"
+        "Inactive | Cost \$$costStr since $state.resetTime"
       // log.debug "$switchStatusS"
       sendEvent(name: "switchStatus", value: switchStatusS, displayed: false)
       // refreshHistory
